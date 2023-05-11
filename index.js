@@ -1,7 +1,7 @@
 const express =require('express');
 const cors = require('cors');
 const app =express();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port =process.env.PORT || 5000;
 // midleware
 app.use(cors());
@@ -33,10 +33,44 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result)
     })
+    //_id, photo, name, details, category, supplier, chef ,taste
+    //update the coffee
+    app.put('/coffee/:id',async(req,res)=>{
+      const id =req.params.id;
+      const updateCoffee = req.body
+      const filter = {_id : new ObjectId(id)};
+      const options = { upsert: true };
+      const coffee ={
+        $set:{
+            name:updateCoffee.name,
+            supplier:updateCoffee.supplier,
+            chef:updateCoffee.chef,
+            category:updateCoffee.category,
+            taste:updateCoffee.taste,
+            photo:updateCoffee.photo,
+            details:updateCoffee.details,
+        }
+      } 
+      const result = await coffeeCollection.updateOne(filter,coffee,options)
+      res.send(result)
+    })
+    app.get('/coffee/:id',async(req,res)=>{
+      const id =req.params.id;
+      const query = {_id : new ObjectId(id)}
+      const result = await coffeeCollection.findOne(query);
+      res.send(result)
+    })
   //post the data from the client sites
   app.post('/coffee',async(req,res)=>{
     const newCoffee = req.body;
     const result = await coffeeCollection.insertOne(newCoffee)
+    res.send(result)
+  })
+  // delet the independent iteam
+  app.delete('/coffee/:id',async(req,res)=>{
+    const id =req.params.id;
+    const query = {_id : new ObjectId(id)}
+    const result = await coffeeCollection.deleteOne(query)
     res.send(result)
   })
 
